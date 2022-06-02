@@ -13,10 +13,13 @@ import {Feather} from '@expo/vector-icons'
 import api from '../../services/api'
 
 import CategoryItem from '../../components/CategoryItem'
+import FavoritePosts from '../../components/FavoritePosts'
+import {getFavorite, setFavorite} from '../../services/favorite'
 
 export default function Home(){
     const navigation = useNavigation()
     const [categories, setCategories] = useState([])
+    const [favCategory, setFavCategory] = useState([])
 
     useEffect(()=>{
 
@@ -32,9 +35,23 @@ export default function Home(){
 
     },[])
 
+    useEffect(()=>{
+        async function favorite(){
+
+            const response = await getFavorite()
+            setFavCategory(response)
+
+        }
+
+        favorite()
+    },[])
+
     //favoritando uma categoria
-    function handleFavorite(id){
-        alert("Categoria favoritada" + id)
+    async function handleFavorite(id){
+       const response = await setFavorite(id)
+
+       setFavCategory(response)
+       alert("Categoria favoritada")
     }
 
     return(
@@ -61,6 +78,27 @@ export default function Home(){
                 />
             ) }
             />
+
+            <View style={styles.main}>
+                
+                {favCategory.length !== 0 && (
+                    <FlatList
+                    style={{
+                        marginTop: 50, 
+                        minHeight: 100,
+                        paddingStart: 18,
+
+                    }}
+                    contentContainerStyle={{paddingEnd: 18, }}
+                    data={favCategory}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(item)=> String(item.id)}
+                    renderItem={({item})=> <FavoritePosts data={item} />}
+                    />
+                )}
+
+            </View>
             
         </SafeAreaView>
     )
@@ -90,5 +128,10 @@ const styles = StyleSheet.create({
         marginHorizontal: 18,
         borderRadius: 8,
         zIndex: 9
+    },
+    main:{
+        backgroundColor: "#fff",
+        flex: 1,
+        marginTop: -30,
     }
 })
