@@ -14,16 +14,20 @@ import api from '../../services/api'
 
 import CategoryItem from '../../components/CategoryItem'
 import FavoritePosts from '../../components/FavoritePosts'
+import PostItem from '../../components/PostItem'
 import {getFavorite, setFavorite} from '../../services/favorite'
 
 export default function Home(){
     const navigation = useNavigation()
     const [categories, setCategories] = useState([])
     const [favCategory, setFavCategory] = useState([])
+    const [posts, setPosts] = useState([])
 
     useEffect(()=>{
 
         async function loadData(){
+
+            await getListPosts()
            
             const category = await api.get('api/categories?populate=icon')
             
@@ -45,6 +49,11 @@ export default function Home(){
 
         favorite()
     },[])
+
+    async function getListPosts(){
+        const response = await api.get("api/posts?populate=cover&sort=createdAt:desc")
+        setPosts(response.data.data)
+    }
 
     //favoritando uma categoria
     async function handleFavorite(id){
@@ -85,7 +94,7 @@ export default function Home(){
                     <FlatList
                     style={{
                         marginTop: 50, 
-                        minHeight: 100,
+                        maxHeight: 100,
                         paddingStart: 18,
 
                     }}
@@ -97,6 +106,28 @@ export default function Home(){
                     renderItem={({item})=> <FavoritePosts data={item} />}
                     />
                 )}
+
+                <Text
+                style={[
+                    styles.title,
+                    {marginTop: favCategory.length > 0 ? 14 : 46}
+                ]}
+                >
+                    Conteúdos em alta
+                </Text>
+
+                <FlatList
+                style={{
+                    flex: 1,
+                    paddingHorizontal: 18
+                }}
+                showsHorizontalScrollIndicator={false}
+                data={posts}
+                keyExtractor={(item)=> String(item.id)}
+                renderItem={ ({item})=> <PostItem
+                data={item}
+                />}
+                />
 
             </View>
             
@@ -133,5 +164,12 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         flex: 1,
         marginTop: -30,
+    },
+    title:{
+        fontSize: 21,
+        paddingHorizontal: 18,
+        marginBottom: 14,
+        fontWeight: 'bold',
+        color: '#162133'
     }
 })
